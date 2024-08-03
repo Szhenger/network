@@ -1,0 +1,134 @@
+{% extends "network/layout.html" %}
+
+{% block title %}{{ profile_user.username }} - CS50 Social Network{% endblock %}
+
+{% block script %}
+    <script>
+        function save_handler(id) {
+            const new_content = document.getElementById(`textarea_${id}`);
+            const old_content = document.getElementById(`content_${id}`);
+            const modal = document.getElementById(`modal_edit_${id}`);
+            fetch(`/edit/${id}`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    content: new_content.value
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                old_content.innerHTML = result.data;
+
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+                modal.setAttribute('style', 'display: none');
+
+                const modal_backdrops = document.getElementsByClassName('modal-backdrop');
+                for(let i = 0; i < modal_backdrops.length; i++) {
+                    document.body.removeChild(modal_backdrops[i]);
+                }
+            });
+        }
+
+        function like_handler(id, liked) {
+            const likes = document.getElementById(`likes_${id}`);
+            const btn = document.getElementById(`${id}`);
+            fetch(`/like/${id}`)
+            .then(response => response.json())
+            .then(result => {
+                likes.innerHTML = `Likes: ${result.data}`;
+
+                btn.innerHTML = 'Unlike';
+                btn.setAttribute('onclick', `unlike_handler(${id}, ${liked})`);
+                btn.className = 'btn btn-danger';
+            });
+        }
+
+        function unlike_handler(id, liked) {
+            const likes = document.getElementById(`likes_${id}`);
+            const btn = document.getElementById(`${id}`);
+            fetch(`/unlike/${id}`)
+            .then(response => response.json())
+            .then(result => {
+                likes.innerHTML = `Likes: ${result.data}`;
+
+                btn.innerHTML = 'Like';
+                btn.setAttribute('onclick', `like_handler(${id}, ${liked})`);
+                btn.className = 'btn btn-success';
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block body %}
+    <h1 style="margin: 18px">@{{ profile_user.username }}</h1>
+    {% if current_user.is_authenticated %}
+        {% if current_user != profile_user %}
+            {% if is_following %}
+                <a class="btn btn-danger" style="margin-left: 18px; margin-bottom: 12px;" href="{% url 'unfollow' id=profile_user.id %}">Unfollow</a>
+            {% else %}
+                <a class="btn btn-success" style="margin-left: 18px; margin-bottom: 12px;" href="{% url 'follow' id=profile_user.id %}">Follow</a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+    <ul class="list-group">
+        <li class="list-group-item">Followers: {{ profile_followers.count }}</li>
+        <li class="list-group-item">Following: {{ profile_following.count }}</li>
+    </ul>
+    {% for profile_post in profile_posts %}
+        <p>
+            <div class="d-flex justify-content-center">
+                <div class="card" style="width: 88rem;">
+                    <h4 class="card-title" style="margin: 18px 18px 0 18px;">
+                        <a style="color: black" href="{% url 'profile' id=profile_post.poster.id %}">@{{ profile_post.poster.username }}</a>
+                    </h4>
+                    <div class="card-body">
+                        <p class="card-text" id="content_{{ profile_post.id }}">{{ profile_post.content }}</p>
+                        <p class="card-text" style="color: grey">{{ profile_post.timestamp }}</p>
+                        <p class="card-text" id="likes_{{ profile_post.id}}">Likes: {{ profile_post.likes }}</p>
+                        {% if current_user.is_authenticated %}
+                            {% if current_user == profile_user %}
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_{{ profile_post.id }}">Edit</button>
+                                <div class="modal fade" id="modal_edit_{{ profile_post.id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Edit Post</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <textarea class="form-control" id="textarea_{{ profile_post.id }}" name="content" rows="5">{{ profile_post.content }}</textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary" onclick="save_handler({{ profile_post.id }})">Save</button>
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {% if profile_post.id in liked %}
+                                    <button class="btn btn-danger" id="{{ profile_post.id }}" onclick="like_handler({{ profile_post.id }}, {{ liked }})">Unlike</button>
+                                {% else %}
+                                    <button class="btn btn-success" id="{{ profile_post.id }}" onclick="like_handler({{ profile_post.id }}, {{ liked }})">Like</button>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </p>
+    {% endfor %}
+
+    <nav aria-label="Page Navigation">
+        <ul class="pagination d-flex justify-content-center">
+            {% if profile_posts.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ profile_posts.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% if profile_posts.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ profile_posts.next_page_number}}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}
