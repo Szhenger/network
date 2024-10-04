@@ -4,7 +4,7 @@
 
 ## Problem to Solve 
 
-Design a Twitter-like social network website for making posts and following users.
+Design a Twitter(X)-like social network website for making posts and following users.
 
 ## Understanding
 
