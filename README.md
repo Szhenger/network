@@ -56,4 +56,4 @@ Users can toggle between “liking” and “unliking” any post by clicking a 
 
 ## Credit and Disclaimer
 
-This problem originates from [CS50's Web Programming with Python and JavaScript](https://cs50.harvard.edu/web/2020/projects/4/network/) and any solution here is explicitly for educational purposes.
+This problem originates from [CS50's Web Programming with Python and JavaScript](https://cs50.harvard.edu/web/2020/projects/4/network/) and any solution here is explicitly for educational purposes only.
