@@ -11,7 +11,7 @@ Design a Twitter(X)-like social network website for making posts and following u
 The `network` project is a Django-based web application.
 
 The URL configuration is defined in `network/urls.py`, which includes routes for the `index` page, `login`, `logout`, and `registration`. These routes are linked to views defined in `network/views.py`, each handling specific functionality:
-* The `index` view currently returns a basic, mostly-empty template.
+* The `index` view initially returns a basic, mostly-empty template.
 * The `login_view` renders a login form when accessed via a `GET` request. If a `POST` request is submitted with valid credentials, the user is authenticated and redirected to the index page.
 * The `logout_view` logs the user out and redirects to the index page.
 * The `register` view displays a registration form and creates a new user when the form is submitted.
